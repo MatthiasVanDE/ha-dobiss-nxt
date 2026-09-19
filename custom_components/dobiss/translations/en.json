@@ -1,0 +1,240 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to your Dobiss NXT server",
+        "description": "Enable the developer API in the NXT settings, then copy the API secret from that same page.",
+        "data": {
+          "host": "Host or IP address",
+          "secret": "API secret",
+          "secure": "Use HTTPS"
+        },
+        "data_description": {
+          "host": "The address of the NXT server on your network, for example 192.168.1.10.",
+          "secret": "Found under Settings, General, Developer API on the NXT server.",
+          "secure": "Only needed when reaching the server over a cloud domain."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-enter the API secret",
+        "description": "The server at {host} no longer accepts the stored secret. It changes when the developer API is switched off and on again.",
+        "data": {
+          "secret": "API secret"
+        }
+      },
+      "reconfigure": {
+        "title": "Change the connection",
+        "data": {
+          "host": "Host or IP address",
+          "secret": "API secret",
+          "secure": "Use HTTPS"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the server at that address.",
+      "invalid_auth": "The server rejected this secret. Check that the developer API is enabled.",
+      "unknown": "Something unexpected went wrong. Check the logs."
+    },
+    "abort": {
+      "already_configured": "This Dobiss NXT server is already set up.",
+      "reauth_successful": "The new secret works.",
+      "reconfigure_successful": "The connection has been updated.",
+      "wrong_server": "That address belongs to a different Dobiss NXT server."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dobiss NXT options",
+        "menu_options": {
+          "general": "General settings",
+          "covers": "Cover travel times"
+        }
+      },
+      "general": {
+        "title": "General settings",
+        "data": {
+          "cover_mode": "How covers report their state",
+          "cover_closetime": "Full travel threshold",
+          "cover_travel_up": "Default travel time, opening",
+          "cover_travel_down": "Default travel time, closing",
+          "ignore_zigbee_devices": "Ignore Zigbee devices",
+          "invert_binary_sensor": "Invert input contacts"
+        },
+        "data_description": {
+          "cover_mode": "Basic reports only open or closed, and stays unknown after a partial run. Position keeps a running estimate and adds a slider, but needs the travel times below to be right.",
+          "cover_closetime": "Used in basic mode. A run longer than this counts as a full travel, so the cover is at an end stop. Set it just below the shortest full run your covers make. Zero leaves every cover unknown.",
+          "cover_travel_up": "How long the cover itself takes to travel end to end. This is not the time the Dobiss relay stays energised: a tubular motor stops at its own limit switch while the relay keeps running.",
+          "cover_travel_down": "As above, for closing. Many covers close slightly faster than they open.",
+          "ignore_zigbee_devices": "Skip devices that Dobiss proxies from Zigbee, if you already integrate them directly.",
+          "invert_binary_sensor": "Turn on when your input contacts are wired the other way round."
+        }
+      },
+      "covers": {
+        "title": "Cover travel times",
+        "description": "Pick the cover you want to give its own timings.",
+        "data": {
+          "cover": "Cover"
+        }
+      },
+      "cover_times": {
+        "title": "Travel times for {cover}",
+        "description": "Time how long {cover} actually moves, from fully open to fully closed{mode_hint}.",
+        "data": {
+          "cover_travel_up": "Travel time, opening",
+          "cover_travel_down": "Travel time, closing"
+        }
+      }
+    }
+  },
+  "selector": {
+    "cover_mode": {
+      "options": {
+        "basic": "Basic: open or closed only",
+        "position": "Position: running estimate with a slider"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power_usage": {
+        "name": "Grid power"
+      },
+      "power_production": {
+        "name": "Grid injection"
+      },
+      "power_solar": {
+        "name": "Solar power"
+      },
+      "energy_usage_high": {
+        "name": "Consumption, day tariff"
+      },
+      "energy_usage_low": {
+        "name": "Consumption, night tariff"
+      },
+      "energy_production_high": {
+        "name": "Injection, day tariff"
+      },
+      "energy_production_low": {
+        "name": "Injection, night tariff"
+      },
+      "energy_solar_total": {
+        "name": "Solar production, total"
+      },
+      "peak_current": {
+        "name": "Peak, current quarter"
+      },
+      "peak_forecast": {
+        "name": "Peak forecast"
+      },
+      "peak_month": {
+        "name": "Peak this month"
+      },
+      "today_usage": {
+        "name": "Consumption today"
+      },
+      "today_production": {
+        "name": "Injection today"
+      },
+      "yesterday_usage": {
+        "name": "Consumption yesterday"
+      },
+      "yesterday_production": {
+        "name": "Injection yesterday"
+      },
+      "self_consumption": {
+        "name": "Self-consumption"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "battery_soc": {
+        "name": "Battery charge"
+      }
+    },
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Connection"
+      }
+    }
+  },
+  "services": {
+    "turn_on": {
+      "name": "Turn on",
+      "description": "Switch a Dobiss output on, using the extras the Dobiss API offers: a delay handled by the server itself, a logical condition, or the motion-detector variant.",
+      "fields": {
+        "brightness_pct": {
+          "name": "Brightness",
+          "description": "Level for a dimmable output, as a percentage."
+        },
+        "delay_on": {
+          "name": "Delay on",
+          "description": "Wait this long before switching on. Above 120 seconds the server rounds to whole minutes, up to two hours."
+        },
+        "delay_off": {
+          "name": "Delay off",
+          "description": "Switch off again after this long. The countdown runs on the Dobiss server, so it survives a Home Assistant restart."
+        },
+        "from_pir": {
+          "name": "From motion detector",
+          "description": "Send this as action 9, which restarts the motion timer inside Dobiss instead of switching the output the way a normal command does."
+        },
+        "condition_id": {
+          "name": "Condition",
+          "description": "Id of a logical condition that the server checks before carrying the action out."
+        },
+        "condition_state": {
+          "name": "Condition must be",
+          "description": "Whether the condition has to be true or false for the action to run."
+        }
+      }
+    },
+    "action": {
+      "name": "Send action",
+      "description": "Send a raw action to the Dobiss NXT server. For anything the entities do not cover.",
+      "fields": {
+        "address": {
+          "name": "Address",
+          "description": "Module address, or an NXT element address above 200."
+        },
+        "channel": {
+          "name": "Channel",
+          "description": "Module output, counting from zero, or NXT output number, counting from one."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Which action to perform."
+        },
+        "option1": {
+          "name": "Option 1",
+          "description": "Dimmer level (0-100), audio volume, or a temperature setting."
+        },
+        "option2": {
+          "name": "Option 2",
+          "description": "Dimmer soft start/stop, audio source, or a temperature period."
+        },
+        "delay_on": {
+          "name": "Delay on",
+          "description": "Seconds to wait before acting."
+        },
+        "delay_off": {
+          "name": "Delay off",
+          "description": "Seconds after which to switch off again."
+        },
+        "condition_id": {
+          "name": "Condition",
+          "description": "Id of the logical condition to check first."
+        },
+        "condition_state": {
+          "name": "Condition must be",
+          "description": "Whether the condition has to be true or false."
+        }
+      }
+    },
+    "refresh": {
+      "name": "Refresh",
+      "description": "Ask the server for a full status. Rarely needed: the server pushes every change on its own."
+    }
+  }
+}

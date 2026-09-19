@@ -1,0 +1,14 @@
+{
+  "domain": "dobiss",
+  "name": "Dobiss NXT",
+  "codeowners": ["@MatthiasVanDE"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/MatthiasVanDE/ha-dobiss-nxt",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/MatthiasVanDE/ha-dobiss-nxt/issues",
+  "loggers": ["custom_components.dobiss"],
+  "requirements": [],
+  "version": "2.0.0"
+}

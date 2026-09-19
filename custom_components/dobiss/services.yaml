@@ -1,0 +1,152 @@
+turn_on:
+  target:
+    entity:
+      integration: dobiss
+      domain:
+        - light
+        - switch
+  fields:
+    brightness_pct:
+      required: false
+      example: 40
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    delay_on:
+      required: false
+      example: 10
+      selector:
+        number:
+          min: 0
+          max: 7200
+          unit_of_measurement: s
+          mode: box
+    delay_off:
+      required: false
+      example: 600
+      selector:
+        number:
+          min: 0
+          max: 7200
+          unit_of_measurement: s
+          mode: box
+    from_pir:
+      required: false
+      example: true
+      selector:
+        boolean:
+    condition_id:
+      required: false
+      advanced: true
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+    condition_state:
+      required: false
+      advanced: true
+      default: true
+      selector:
+        boolean:
+
+action:
+  fields:
+    address:
+      required: true
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+    channel:
+      required: true
+      example: 7
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+    action:
+      required: true
+      example: 2
+      selector:
+        select:
+          custom_value: true
+          options:
+            - label: "0 - Off"
+              value: "0"
+            - label: "1 - On"
+              value: "1"
+            - label: "2 - Toggle"
+              value: "2"
+            - label: "3 - Start dimming"
+              value: "3"
+            - label: "4 - Stop dimming"
+              value: "4"
+            - label: "5 - Blink, end on"
+              value: "5"
+            - label: "6 - Blink, end off"
+              value: "6"
+            - label: "7 - Blink, restore"
+              value: "7"
+            - label: "9 - On via PIR"
+              value: "9"
+            - label: "10 - On (milliseconds)"
+              value: "10"
+            - label: "104 - Skip audio source"
+              value: "104"
+            - label: "110 - Activate calendar"
+              value: "110"
+    option1:
+      required: false
+      example: 50
+      selector:
+        number:
+          min: 0
+          max: 254
+          mode: box
+    option2:
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 254
+          mode: box
+    delay_on:
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 7200
+          unit_of_measurement: s
+          mode: box
+    delay_off:
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 7200
+          unit_of_measurement: s
+          mode: box
+    condition_id:
+      required: false
+      advanced: true
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+    condition_state:
+      required: false
+      advanced: true
+      default: true
+      selector:
+        boolean:
+
+refresh:

@@ -1,0 +1,115 @@
+{
+  "groups": [
+    {
+      "group": { "id": 0, "name": "No group" },
+      "subjects": [
+        {
+          "name": "Unassigned relay",
+          "address": "0", "channel": "19", "type": "0", "icons_id": "0",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    },
+    {
+      "group": { "id": 8, "name": "Hallway" },
+      "subjects": [
+        {
+          "name": "Hallway ceiling",
+          "address": "2", "channel": "7", "type": "8", "icons_id": "0",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": "0", "pincode": "" }
+        },
+        {
+          "name": "Hallway socket",
+          "address": "2", "channel": "8", "type": "8", "icons_id": "1",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    },
+    {
+      "group": { "id": 11, "name": "Living room" },
+      "subjects": [
+        {
+          "name": "Living room dimmer",
+          "address": "3", "channel": "2", "type": "16", "icons_id": "0",
+          "dimmable": "1",
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        },
+        {
+          "name": "Not a dimmer",
+          "address": "3", "channel": "3", "type": "16", "icons_id": "0",
+          "dimmable": "0",
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    },
+    {
+      "group": { "id": 1, "name": "Shutters" },
+      "subjects": [
+        {
+          "name": "Living room shutter",
+          "address": "7", "channel": "9", "type": "8", "icons_id": "3",
+          "dimmable": null,
+          "settings": { "locks": [8, null], "readonly": null, "pincode": null }
+        },
+        {
+          "name": "Living room shutter",
+          "address": "7", "channel": "8", "type": "8", "icons_id": "4",
+          "dimmable": null,
+          "settings": { "locks": [9, null], "readonly": null, "pincode": null }
+        },
+        {
+          "name": "Roof window open",
+          "address": "7", "channel": "3", "type": "8", "icons_id": "3",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        },
+        {
+          "name": "Roof window dicht",
+          "address": "7", "channel": "2", "type": "8", "icons_id": "4",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    },
+    {
+      "group": { "id": 201, "name": "Scenarios" },
+      "subjects": [
+        {
+          "name": "Evening",
+          "address": "201", "channel": "1", "type": "201", "icons_id": "201",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    },
+    {
+      "group": { "id": 203, "name": "Logical conditions" },
+      "subjects": [
+        {
+          "name": "Sun is up",
+          "address": "203", "channel": "1", "type": "203", "icons_id": "203",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    },
+    {
+      "group": { "id": 206, "name": "Flags" },
+      "subjects": [
+        {
+          "name": "Motion hallway",
+          "address": "206", "channel": "3", "type": "206", "icons_id": "206",
+          "dimmable": null,
+          "settings": { "locks": [null, null], "readonly": null, "pincode": null }
+        }
+      ]
+    }
+  ],
+  "icons": {},
+  "temp_calendars": [],
+  "audio_sources": [],
+  "ventilation_modes": []
+}

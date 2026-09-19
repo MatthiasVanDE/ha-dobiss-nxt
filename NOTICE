@@ -1,0 +1,37 @@
+ha-dobiss-nxt
+=============
+
+This project is a rewrite of prior work and would not exist without it.
+
+Original work
+-------------
+  "dobiss" custom integration for Home Assistant
+  "pydobiss" Python library
+  Copyright (c) 2020-2025 Kester Aernoudt
+  https://github.com/kesteraernoudt/dobiss
+  https://pypi.org/project/pydobiss/
+  Licensed under the MIT License.
+
+Kester Aernoudt reverse-engineered and documented the Dobiss NXT behaviour that
+this integration relies on, wrote the first working Home Assistant integration
+for it, and maintained it from 2020 through 2025. The device model, the way
+up/down relay pairs are matched into covers, and the overall shape of the
+platform layout all originate with him.
+
+This project
+------------
+  Copyright (c) 2026 Matthias Van der Elst
+  https://github.com/MatthiasVanDE/ha-dobiss-nxt
+  Licensed under the MIT License.
+
+What changed relative to the original:
+  - the pydobiss dependency was replaced by a typed async client inside this
+    integration, so there is no longer an unmaintained pinned dependency;
+  - the xknx==0.9.4 pin was dropped in favour of an internal travel calculator;
+  - entities report availability from the live connection state;
+  - the Dobiss NXT energy meter (address 209) is exposed as sensors;
+  - several defects in the original were fixed. They are listed in CHANGELOG.md
+    and were reported upstream.
+
+Dobiss is a trademark of Dobiss NV. This project is not affiliated with,
+endorsed by, or supported by Dobiss NV.

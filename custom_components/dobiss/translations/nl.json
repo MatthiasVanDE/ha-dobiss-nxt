@@ -1,0 +1,240 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbinden met je Dobiss NXT-server",
+        "description": "Zet de developer-API aan in de instellingen van de NXT en neem de API-sleutel over van diezelfde pagina.",
+        "data": {
+          "host": "Host of IP-adres",
+          "secret": "API-sleutel",
+          "secure": "HTTPS gebruiken"
+        },
+        "data_description": {
+          "host": "Het adres van de NXT-server in je netwerk, bijvoorbeeld 192.168.1.10.",
+          "secret": "Te vinden onder Instellingen, Algemeen, Developer API op de NXT-server.",
+          "secure": "Alleen nodig als je de server via een clouddomein bereikt."
+        }
+      },
+      "reauth_confirm": {
+        "title": "API-sleutel opnieuw ingeven",
+        "description": "De server op {host} aanvaardt de bewaarde sleutel niet meer. Die verandert wanneer de developer-API uit en weer aan wordt gezet.",
+        "data": {
+          "secret": "API-sleutel"
+        }
+      },
+      "reconfigure": {
+        "title": "Verbinding wijzigen",
+        "data": {
+          "host": "Host of IP-adres",
+          "secret": "API-sleutel",
+          "secure": "HTTPS gebruiken"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "De server is op dat adres niet bereikbaar.",
+      "invalid_auth": "De server weigert deze sleutel. Kijk na of de developer-API aanstaat.",
+      "unknown": "Er ging iets onverwachts mis. Kijk in de logboeken."
+    },
+    "abort": {
+      "already_configured": "Deze Dobiss NXT-server is al ingesteld.",
+      "reauth_successful": "De nieuwe sleutel werkt.",
+      "reconfigure_successful": "De verbinding is bijgewerkt.",
+      "wrong_server": "Dat adres hoort bij een andere Dobiss NXT-server."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dobiss NXT-opties",
+        "menu_options": {
+          "general": "Algemene instellingen",
+          "covers": "Looptijden van rolluiken"
+        }
+      },
+      "general": {
+        "title": "Algemene instellingen",
+        "data": {
+          "cover_mode": "Hoe rolluiken hun toestand melden",
+          "cover_closetime": "Drempel voor een volledige rit",
+          "cover_travel_up": "Standaard looptijd, openen",
+          "cover_travel_down": "Standaard looptijd, sluiten",
+          "ignore_zigbee_devices": "Zigbee-toestellen negeren",
+          "invert_binary_sensor": "Ingangscontacten omkeren"
+        },
+        "data_description": {
+          "cover_mode": "Basis meldt enkel open of dicht, en blijft onbekend na een halve rit. Positie houdt een schatting bij en geeft een schuifregelaar, maar dan moeten de looptijden hieronder kloppen.",
+          "cover_closetime": "Wordt gebruikt in de basisstand. Een rit die langer duurt dan dit telt als een volledige rit, dus staat het rolluik aan een eindpunt. Zet hem net onder de kortste volledige rit die je rolluiken maken. Nul laat elk rolluik onbekend.",
+          "cover_travel_up": "Hoe lang het rolluik zelf beweegt, van boven tot onder. Dit is niet de tijd dat het Dobiss-relais aanstuurt: een buismotor stopt op zijn eigen eindeloop terwijl het relais doorloopt.",
+          "cover_travel_down": "Zoals hierboven, maar voor het sluiten. Veel rolluiken sluiten iets sneller dan ze openen.",
+          "ignore_zigbee_devices": "Sla toestellen over die Dobiss vanuit Zigbee doorgeeft, als je die al rechtstreeks integreert.",
+          "invert_binary_sensor": "Zet dit aan wanneer je ingangscontacten omgekeerd bedraad zijn."
+        }
+      },
+      "covers": {
+        "title": "Looptijden van rolluiken",
+        "description": "Kies het rolluik dat je eigen tijden wil geven.",
+        "data": {
+          "cover": "Rolluik"
+        }
+      },
+      "cover_times": {
+        "title": "Looptijden voor {cover}",
+        "description": "Klok hoe lang {cover} werkelijk beweegt, van volledig open tot volledig dicht{mode_hint}.",
+        "data": {
+          "cover_travel_up": "Looptijd, openen",
+          "cover_travel_down": "Looptijd, sluiten"
+        }
+      }
+    }
+  },
+  "selector": {
+    "cover_mode": {
+      "options": {
+        "basic": "Basis: enkel open of dicht",
+        "position": "Positie: lopende schatting met schuifregelaar"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power_usage": {
+        "name": "Afname net"
+      },
+      "power_production": {
+        "name": "Injectie net"
+      },
+      "power_solar": {
+        "name": "Zonnevermogen"
+      },
+      "energy_usage_high": {
+        "name": "Afname, dagtarief"
+      },
+      "energy_usage_low": {
+        "name": "Afname, nachttarief"
+      },
+      "energy_production_high": {
+        "name": "Injectie, dagtarief"
+      },
+      "energy_production_low": {
+        "name": "Injectie, nachttarief"
+      },
+      "energy_solar_total": {
+        "name": "Zonneproductie, totaal"
+      },
+      "peak_current": {
+        "name": "Piek, lopend kwartier"
+      },
+      "peak_forecast": {
+        "name": "Piekprognose"
+      },
+      "peak_month": {
+        "name": "Piek deze maand"
+      },
+      "today_usage": {
+        "name": "Afname vandaag"
+      },
+      "today_production": {
+        "name": "Injectie vandaag"
+      },
+      "yesterday_usage": {
+        "name": "Afname gisteren"
+      },
+      "yesterday_production": {
+        "name": "Injectie gisteren"
+      },
+      "self_consumption": {
+        "name": "Zelfverbruik"
+      },
+      "battery_power": {
+        "name": "Batterijvermogen"
+      },
+      "battery_soc": {
+        "name": "Batterijlading"
+      }
+    },
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Verbinding"
+      }
+    }
+  },
+  "services": {
+    "turn_on": {
+      "name": "Inschakelen",
+      "description": "Schakel een Dobiss-uitgang in met de extra's die de Dobiss-API biedt: een vertraging die de server zelf aftelt, een logische conditie, of de variant voor bewegingsmelders.",
+      "fields": {
+        "brightness_pct": {
+          "name": "Helderheid",
+          "description": "Niveau voor een dimbare uitgang, in procent."
+        },
+        "delay_on": {
+          "name": "Vertraging aan",
+          "description": "Wacht zolang voor er ingeschakeld wordt. Boven 120 seconden rondt de server af op hele minuten, tot twee uur."
+        },
+        "delay_off": {
+          "name": "Vertraging uit",
+          "description": "Schakel na deze tijd weer uit. Het aftellen gebeurt op de Dobiss-server, dus het overleeft een herstart van Home Assistant."
+        },
+        "from_pir": {
+          "name": "Vanaf bewegingsmelder",
+          "description": "Stuur dit als actie 9, waardoor de bewegingstimer in Dobiss herstart in plaats van de uitgang gewoon te schakelen."
+        },
+        "condition_id": {
+          "name": "Conditie",
+          "description": "Id van een logische conditie die de server nakijkt voor hij de actie uitvoert."
+        },
+        "condition_state": {
+          "name": "Conditie moet zijn",
+          "description": "Of de conditie waar of onwaar moet zijn om de actie uit te voeren."
+        }
+      }
+    },
+    "action": {
+      "name": "Actie versturen",
+      "description": "Stuur een ruwe actie naar de Dobiss NXT-server, voor alles wat de entiteiten niet dekken.",
+      "fields": {
+        "address": {
+          "name": "Adres",
+          "description": "Adres van de module, of een NXT-elementadres boven 200."
+        },
+        "channel": {
+          "name": "Kanaal",
+          "description": "Module-uitgang vanaf nul, of NXT-uitgangnummer vanaf één."
+        },
+        "action": {
+          "name": "Actie",
+          "description": "Welke actie uitgevoerd moet worden."
+        },
+        "option1": {
+          "name": "Optie 1",
+          "description": "Dimniveau (0-100), audiovolume, of een temperatuurinstelling."
+        },
+        "option2": {
+          "name": "Optie 2",
+          "description": "Soft start/stop van de dimmer, audiobron, of een temperatuurperiode."
+        },
+        "delay_on": {
+          "name": "Vertraging aan",
+          "description": "Aantal seconden wachten voor de actie."
+        },
+        "delay_off": {
+          "name": "Vertraging uit",
+          "description": "Aantal seconden waarna weer uitgeschakeld wordt."
+        },
+        "condition_id": {
+          "name": "Conditie",
+          "description": "Id van de logische conditie die eerst nagekeken wordt."
+        },
+        "condition_state": {
+          "name": "Conditie moet zijn",
+          "description": "Of de conditie waar of onwaar moet zijn."
+        }
+      }
+    },
+    "refresh": {
+      "name": "Vernieuwen",
+      "description": "Vraag de server om een volledige status. Zelden nodig: de server duwt elke wijziging vanzelf door."
+    }
+  }
+}

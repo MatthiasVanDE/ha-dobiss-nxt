@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  zip:
+    name: Attach the integration to the release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that the tag matches the manifest
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION=$(python -c "import json;print(json.load(open('custom_components/dobiss/manifest.json'))['version'])")
+          if [ "${TAG#v}" != "$VERSION" ]; then
+            echo "Tag ${TAG} does not match manifest version ${VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Build dobiss.zip
+        run: |
+          cd custom_components/dobiss
+          zip -r ../../dobiss.zip . -x '*__pycache__*'
+
+      - name: Upload
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dobiss.zip

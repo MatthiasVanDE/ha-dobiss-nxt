@@ -1,0 +1,48 @@
+name: Bug report
+description: Something does not work the way it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please attach the diagnostics download. It carries every output your server
+        reports, with the secret and the host redacted, and usually makes the cause
+        obvious straight away.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: And what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Integration version
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.9.2"
+    validations:
+      required: true
+  - type: input
+    id: nxt
+    attributes:
+      label: Dobiss NXT server version
+      description: Shown in the NXT web interface.
+      placeholder: "4.30"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines
+      description: Enable debug logging for the integration first, if you can.
+      render: text
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Drag the downloaded file in here.

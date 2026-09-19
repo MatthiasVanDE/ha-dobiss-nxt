@@ -1,0 +1,34 @@
+name: Untested hardware report
+description: You have temperature zones, audio, air conditioning, RGB or Zigbee
+labels: ["hardware"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Parts of this integration are written to the published Dobiss API but have never
+        run against the hardware they describe. A report either way is genuinely useful,
+        including "it just works".
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What do you have
+      multiple: true
+      options:
+        - Temperature zones (address 204)
+        - Audio zones (address 205)
+        - Air conditioning (address 213)
+        - RGB or tunable white fixtures
+        - Zigbee devices through Dobiss
+        - Input contacts or counters
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics

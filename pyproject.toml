@@ -1,0 +1,56 @@
+[project]
+name = "ha-dobiss-nxt"
+version = "2.0.0"
+description = "Home Assistant integration for the Dobiss NXT home automation server"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+authors = [{ name = "Matthias Van der Elst" }]
+keywords = ["home-assistant", "dobiss", "nxt", "home-automation"]
+
+[project.urls]
+Homepage = "https://github.com/MatthiasVanDE/ha-dobiss-nxt"
+Issues = "https://github.com/MatthiasVanDE/ha-dobiss-nxt/issues"
+Changelog = "https://github.com/MatthiasVanDE/ha-dobiss-nxt/blob/main/CHANGELOG.md"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "E", "W",    # pycodestyle
+  "F",         # pyflakes
+  "I",         # isort
+  "UP",        # pyupgrade
+  "B",         # bugbear
+  "SIM",       # simplify
+  "RUF",       # ruff
+  "D",         # pydocstyle
+  "ASYNC",     # async correctness
+  "C4",        # comprehensions
+  "PTH",       # pathlib
+  "RET",       # returns
+  "TID",       # tidy imports
+]
+ignore = [
+  "D203",   # conflicts with D211
+  "D213",   # conflicts with D212
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D100", "D103"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+exclude = ["^tests/"]
