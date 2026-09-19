@@ -8,7 +8,7 @@ from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST
+from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
@@ -126,6 +126,20 @@ class DobissHub:
             self._async_watchdog,
             timedelta(seconds=WATCHDOG_INTERVAL),
         )
+
+        # Home Assistant does not unload config entries when it shuts down, so
+        # without this the socket closing on the way out is reported as an
+        # outage in the log.
+        self.entry.async_on_unload(
+            self.hass.bus.async_listen_once(
+                EVENT_HOMEASSISTANT_STOP, self._handle_hass_stop
+            )
+        )
+
+    @callback
+    def _handle_hass_stop(self, _event: Any) -> None:
+        """Stop treating a dropped connection as news."""
+        self._shutting_down = True
 
     async def async_shutdown(self) -> None:
         """Stop everything this hub started."""

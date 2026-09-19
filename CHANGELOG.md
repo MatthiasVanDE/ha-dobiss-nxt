@@ -3,6 +3,19 @@
 All notable changes are recorded here. This project follows
 [semantic versioning](https://semver.org/).
 
+## [2.0.1] - 2026-09-19
+
+### Fixed
+
+- A cumulative meter register that the server reports as `null` no longer drops its
+  sensor to unknown. A missing field means "no reading right now", not "the meter is at
+  zero", and blanking it breaks the long-term statistics the energy dashboard is built
+  on. Observed live: an NXT stopped reporting its day-tariff registers while the
+  night-tariff one kept counting.
+- The connection closing while Home Assistant shuts down is no longer logged as an
+  outage. Home Assistant does not unload config entries on the way out, so the hub now
+  listens for the stop event itself.
+
 ## [2.0.0] - 2026-09-19
 
 First release under new maintenance. A rewrite of

@@ -403,11 +403,25 @@ class EnergySnapshot:
             self.power_usage = as_float(current.get("use"))
             self.power_production = as_float(current.get("pro"))
             self.power_solar = as_float(current.get("solar"))
-            self.energy_usage_low = as_float(current.get("use_low"))
-            self.energy_usage_high = as_float(current.get("use_high"))
-            self.energy_production_low = as_float(current.get("pro_low"))
-            self.energy_production_high = as_float(current.get("pro_high"))
-            self.energy_solar_total = as_float(current.get("solar_total"))
+            # A meter register is cumulative. When the server leaves the
+            # field out or sends null it is saying "I have no reading right
+            # now", not "the meter is at zero" - so keep the last one rather
+            # than dropping the sensor to unknown and breaking its statistics.
+            self.energy_usage_low = as_float(
+                current.get("use_low"), self.energy_usage_low
+            )
+            self.energy_usage_high = as_float(
+                current.get("use_high"), self.energy_usage_high
+            )
+            self.energy_production_low = as_float(
+                current.get("pro_low"), self.energy_production_low
+            )
+            self.energy_production_high = as_float(
+                current.get("pro_high"), self.energy_production_high
+            )
+            self.energy_solar_total = as_float(
+                current.get("solar_total"), self.energy_solar_total
+            )
             self.peak_current = as_float(current.get("peak"))
             self.peak_forecast = as_float(current.get("peak_forecast"))
             self.peak_month = as_float(current.get("peak_month"))

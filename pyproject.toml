@@ -1,6 +1,6 @@
 [project]
 name = "ha-dobiss-nxt"
-version = "2.0.0"
+version = "2.0.1"
 description = "Home Assistant integration for the Dobiss NXT home automation server"
 readme = "README.md"
 requires-python = ">=3.13"
