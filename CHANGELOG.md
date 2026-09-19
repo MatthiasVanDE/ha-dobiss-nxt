@@ -3,6 +3,17 @@
 All notable changes are recorded here. This project follows
 [semantic versioning](https://semver.org/).
 
+## [2.0.2] - 2026-09-19
+
+### Fixed
+
+- Covers could not be operated from Home Assistant: `cover.open_cover`,
+  `cover.close_cover` and `cover.set_cover_position` failed with
+  `'DobissBasicCover' object has no attribute 'async_handle_open_cover'`. The cover base
+  class inherited from the integration's own entity but not from `CoverEntity`, so it
+  never got the service handlers, the state machine or the position attributes that
+  Home Assistant calls into. The physical wall buttons were unaffected throughout.
+
 ## [2.0.1] - 2026-09-19
 
 ### Fixed

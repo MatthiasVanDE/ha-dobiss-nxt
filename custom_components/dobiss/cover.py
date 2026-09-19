@@ -24,6 +24,7 @@ from typing import Any
 from homeassistant.components.cover import (
     ATTR_POSITION,
     CoverDeviceClass,
+    CoverEntity,
     CoverEntityFeature,
 )
 from homeassistant.core import HomeAssistant, callback
@@ -63,7 +64,7 @@ async def async_setup_entry(
     )
 
 
-class DobissCoverBase(DobissEntity, RestoreEntity):
+class DobissCoverBase(DobissEntity, RestoreEntity, CoverEntity):
     """Shared plumbing for both cover modes."""
 
     _attr_name = None
