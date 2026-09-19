@@ -1,14 +1,13 @@
 version: 2
 updates:
+  # Only the actions are pinned to an exact major; the Python test dependencies
+  # use lower bounds on purpose, so bumping those floors is pure noise.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: monthly
     commit-message:
       prefix: "ci"
-  - package-ecosystem: pip
-    directory: "/"
-    schedule:
-      interval: monthly
-    commit-message:
-      prefix: "build"
+    groups:
+      actions:
+        patterns: ["*"]

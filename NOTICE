@@ -3,6 +3,10 @@ ha-dobiss-nxt
 
 This project is a rewrite of prior work and would not exist without it.
 
+The LICENSE file holds the plain MIT text so that automated licence detection
+recognises it. The two copyright lines in it are deliberate: the first covers the
+original work described below, the second covers this rewrite. Both are MIT.
+
 Original work
 -------------
   "dobiss" custom integration for Home Assistant
