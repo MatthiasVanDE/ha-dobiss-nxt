@@ -3,6 +3,16 @@
 All notable changes are recorded here. This project follows
 [semantic versioning](https://semver.org/).
 
+## [2.0.3] - 2026-11-23
+
+### Fixed
+
+- Home Assistant 2026.11 logged a deprecation warning for the climate entities: they
+  used `_attr_temperature_unit`, `current_temperature` and `target_temperature`, which
+  were renamed to their `native_` counterparts and stop working in 2027.11. The
+  entities now use the new names on 2026.11 and later, and keep the old ones on older
+  versions, so the minimum Home Assistant version is unchanged.
+
 ## [2.0.2] - 2026-09-19
 
 ### Fixed

@@ -28,6 +28,10 @@ _MIN_TEMP = 5.0
 _MAX_TEMP = 30.0
 #: Period 0xFE means "keep this setting until somebody changes it".
 _PERIOD_ALWAYS = 0xFE
+#: Home Assistant 2026.11 renamed the temperature properties of ClimateEntity to
+#: native_*; the old names log a deprecation warning and stop working in 2027.11.
+#: Older versions only know the old names, and hacs.json still allows 2025.2.
+_NATIVE_TEMPERATURES = hasattr(ClimateEntity, "native_current_temperature")
 
 
 def _encode_temperature(celsius: float) -> int:
@@ -54,7 +58,6 @@ class DobissClimate(DobissEntity, ClimateEntity):
     """One Dobiss temperature zone."""
 
     _attr_name = None
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes: ClassVar[list[HVACMode]] = [HVACMode.HEAT, HVACMode.OFF]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
@@ -74,15 +77,31 @@ class DobissClimate(DobissEntity, ClimateEntity):
             f"climatecontrol_{zone.info.unique_id}", zone.info.name
         )
 
-    @property
-    def current_temperature(self) -> float | None:
-        """Measured temperature in the zone."""
-        return self._zone.current
+    if _NATIVE_TEMPERATURES:
+        _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
 
-    @property
-    def target_temperature(self) -> float | None:
-        """Temperature the zone is asking for."""
-        return self._zone.target
+        @property
+        def native_current_temperature(self) -> float | None:
+            """Measured temperature in the zone."""
+            return self._zone.current
+
+        @property
+        def native_target_temperature(self) -> float | None:
+            """Temperature the zone is asking for."""
+            return self._zone.target
+
+    else:  # Home Assistant before 2026.11
+        _attr_temperature_unit = UnitOfTemperature.CELSIUS
+
+        @property
+        def current_temperature(self) -> float | None:
+            """Measured temperature in the zone."""
+            return self._zone.current
+
+        @property
+        def target_temperature(self) -> float | None:
+            """Temperature the zone is asking for."""
+            return self._zone.target
 
     @property
     def hvac_mode(self) -> HVACMode:
