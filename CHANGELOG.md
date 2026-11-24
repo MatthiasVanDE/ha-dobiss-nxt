@@ -3,6 +3,34 @@
 All notable changes are recorded here. This project follows
 [semantic versioning](https://semver.org/).
 
+## [2.1.0] - 2026-11-24
+
+### Changed
+
+- The grid sensors of the energy meter turn **unavailable while the NXT is not reading
+  the grid**. When the NXT loses its P1 source it falls back to another meter it knows,
+  such as a heat pump sub-meter, and reports that meter's single register as tariff 1
+  with tariff 2 null. Grid power, the peaks and the daily totals then describe that
+  meter too. Observed live twice: from 2026-09-19 to 2026-11-07, and again from
+  2026-11-23. A warning is logged when it happens and an info line when the grid meter
+  is back.
+- The tariff names were the wrong way round. The NXT's `low` register is tariff 1, which
+  a Belgian meter bills as the **day** tariff, and `high` is tariff 2, night and
+  weekend. Verified against a HomeWizard P1 meter to the watt-hour. Only the names
+  change; unique ids stay the same, so existing entity ids keep their history. Swap the
+  entity ids by hand if you want them to match the names.
+
+### Fixed
+
+- Readings that no household connection could produce are dropped: a cumulative
+  register that runs backwards or rises faster than 60 kW, a peak above 60 kW (the NXT
+  reported a monthly peak of 32 879 kW), and daily totals below zero or above 60 kW for
+  24 hours. Months in the peak history that the NXT recorded while it read the wrong
+  meter are left out for the same reason.
+- 2.0.1 kept a register's last value when the server sent null. That is still the case,
+  but it no longer hides a fallback meter: it made the tariff-2 registers look frozen
+  rather than missing.
+
 ## [2.0.3] - 2026-11-23
 
 ### Fixed

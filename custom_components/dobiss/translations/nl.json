@@ -108,16 +108,16 @@
         "name": "Zonnevermogen"
       },
       "energy_usage_high": {
-        "name": "Afname, dagtarief"
+        "name": "Afname, nachttarief (T2)"
       },
       "energy_usage_low": {
-        "name": "Afname, nachttarief"
+        "name": "Afname, dagtarief (T1)"
       },
       "energy_production_high": {
-        "name": "Injectie, dagtarief"
+        "name": "Injectie, nachttarief (T2)"
       },
       "energy_production_low": {
-        "name": "Injectie, nachttarief"
+        "name": "Injectie, dagtarief (T1)"
       },
       "energy_solar_total": {
         "name": "Zonneproductie, totaal"

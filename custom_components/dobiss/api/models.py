@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
-from typing import Any, Self
+from typing import Any, Final, Self
 
 from .const import (
     COVER_DOWN_ICONS,
@@ -20,6 +21,21 @@ from .const import (
 )
 
 _FALSEY_STRINGS = frozenset({"", "0", "false", "no", "off", "null", "none"})
+
+#: The most power a household grid connection can plausibly carry, in kW. A
+#: three-phase 63 A connection tops out around 43 kW. The NXT has been seen
+#: reporting a monthly peak of 35847 kW, which is not a measurement.
+MAX_PLAUSIBLE_KW: Final = 60.0
+#: Allowance on top of the rate limit for a cumulative register, in kWh, so that
+#: rounding and the spacing of frames never reject a genuine reading.
+REGISTER_SLACK_KWH: Final = 0.5
+#: The cumulative grid registers, as attribute name and payload field.
+_GRID_REGISTERS: Final = (
+    ("energy_usage_low", "use_low"),
+    ("energy_usage_high", "use_high"),
+    ("energy_production_low", "pro_low"),
+    ("energy_production_high", "pro_high"),
+)
 
 
 def as_enum[EnumT: IntEnum](enum_cls: type[EnumT], value: Any) -> EnumT | None:
@@ -338,16 +354,29 @@ class EnergySnapshot:
     The NXT pushes this once a minute whether or not anyone is listening, which
     makes it free to expose. ``peak_month`` and ``peak_forecast`` are what the
     Belgian capacity tariff is billed on.
+
+    The server does not always describe the grid. When it loses its P1 source
+    it falls back to another meter it knows, such as a sub-meter on a heat
+    pump, and reports that meter's single register as ``use_low`` with the
+    tariff-2 registers null. The grid power, the peaks and the daily totals then
+    come from that meter too, while looking perfectly ordinary. Such a frame
+    sets ``grid_meter_present`` to False and leaves the grid registers alone.
     """
 
     timestamp: datetime | None = None
+    #: Whether the last frame described the grid connection. See the class doc.
+    grid_meter_present: bool = True
+    #: How many readings were thrown away as implausible since start-up.
+    rejected_readings: int = 0
     #: Instantaneous grid draw in W. Zero while exporting.
     power_usage: float | None = None
     #: Instantaneous grid injection in W. Zero while importing.
     power_production: float | None = None
     #: Instantaneous solar production in W, when an inverter is configured.
     power_solar: float | None = None
-    #: Cumulative import/export registers in kWh, split by tariff.
+    #: Cumulative import/export registers in kWh. ``low`` is tariff 1 (OBIS
+    #: 1.8.1 and 2.8.1), which Belgian meters bill as the day tariff; ``high``
+    #: is tariff 2, the night and weekend tariff.
     energy_usage_low: float | None = None
     energy_usage_high: float | None = None
     energy_production_low: float | None = None
@@ -375,6 +404,10 @@ class EnergySnapshot:
     yesterday_production: float | None = None
     yesterday_solar: float | None = None
     battery_available: bool = False
+    #: When each grid register last accepted a reading, on the monotonic clock.
+    _register_at: dict[str, float] = field(
+        default_factory=dict, repr=False, compare=False
+    )
 
     @staticmethod
     def _parse_timestamp(value: Any) -> datetime | None:
@@ -386,13 +419,78 @@ class EnergySnapshot:
         except ValueError:
             return None
 
-    def apply(self, payload: Any) -> bool:
+    @staticmethod
+    def _is_grid_frame(current: dict[str, Any]) -> bool:
+        """Whether a frame describes the grid rather than a fallback meter.
+
+        A grid meter always reports both tariffs. A fallback meter has only
+        one register, so the tariff-2 fields come through as null.
+        """
+        tariff_1 = (current.get("use_low"), current.get("pro_low"))
+        tariff_2 = (current.get("use_high"), current.get("pro_high"))
+        return all(v is None for v in tariff_1) or any(v is not None for v in tariff_2)
+
+    def _accept_register(self, name: str, raw: Any, now: float) -> None:
+        """Take a cumulative register reading, unless it cannot be true.
+
+        When the server leaves the field out or sends null it is saying "I have
+        no reading right now", not "the meter is at zero", so the last value is
+        kept rather than dropping the sensor to unknown and breaking its
+        statistics. A reading that goes backwards, or rises faster than a
+        household connection can draw, is a glitch and is thrown away too.
+        """
+        value = as_float(raw)
+        if value is None:
+            return
+        previous = getattr(self, name)
+        if previous is not None:
+            hours = max(0.0, now - self._register_at.get(name, now)) / 3600
+            ceiling = previous + MAX_PLAUSIBLE_KW * hours + REGISTER_SLACK_KWH
+            if not previous <= value <= ceiling:
+                self.rejected_readings += 1
+                return
+        setattr(self, name, value)
+        self._register_at[name] = now
+
+    @staticmethod
+    def _power_kw(raw: Any) -> float | None:
+        """Read a power figure in kW, or None when it cannot be a real one."""
+        value = as_float(raw)
+        if value is None or not 0 <= value <= MAX_PLAUSIBLE_KW:
+            return None
+        return value
+
+    @staticmethod
+    def _power_w(raw: Any) -> float | None:
+        """Read a power figure in W, or None when it cannot be a real one."""
+        value = as_float(raw)
+        if value is None or not 0 <= value <= MAX_PLAUSIBLE_KW * 1000:
+            return None
+        return value
+
+    @staticmethod
+    def _day_total(raw: Any) -> float | None:
+        """Read a daily total in kWh, or None when no connection could do that.
+
+        The server works these out as "register now minus register at
+        midnight", so a register that jumped or fell back to another meter
+        shows up here as thousands of kWh, or as a negative injection.
+        """
+        value = as_float(raw)
+        if value is None or not 0 <= value <= MAX_PLAUSIBLE_KW * 24:
+            return None
+        return value
+
+    def apply(self, payload: Any, now: float | None = None) -> bool:
         """Apply the address-209 part of a status frame.
 
-        Returns whether anything changed.
+        ``now`` is the monotonic clock, for tests. Returns whether anything
+        changed.
         """
         if not isinstance(payload, dict):
             return False
+        if now is None:
+            now = time.monotonic()
         before = self._fingerprint()
 
         self.battery_available = as_bool(payload.get("battery_available"))
@@ -400,31 +498,19 @@ class EnergySnapshot:
         current = payload.get("0")
         if isinstance(current, dict):
             self.timestamp = self._parse_timestamp(current.get("datetime"))
-            self.power_usage = as_float(current.get("use"))
-            self.power_production = as_float(current.get("pro"))
-            self.power_solar = as_float(current.get("solar"))
-            # A meter register is cumulative. When the server leaves the
-            # field out or sends null it is saying "I have no reading right
-            # now", not "the meter is at zero" - so keep the last one rather
-            # than dropping the sensor to unknown and breaking its statistics.
-            self.energy_usage_low = as_float(
-                current.get("use_low"), self.energy_usage_low
-            )
-            self.energy_usage_high = as_float(
-                current.get("use_high"), self.energy_usage_high
-            )
-            self.energy_production_low = as_float(
-                current.get("pro_low"), self.energy_production_low
-            )
-            self.energy_production_high = as_float(
-                current.get("pro_high"), self.energy_production_high
-            )
+            self.grid_meter_present = self._is_grid_frame(current)
+            self.power_usage = self._power_w(current.get("use"))
+            self.power_production = self._power_w(current.get("pro"))
+            self.power_solar = self._power_w(current.get("solar"))
+            if self.grid_meter_present:
+                for name, key in _GRID_REGISTERS:
+                    self._accept_register(name, current.get(key), now)
             self.energy_solar_total = as_float(
                 current.get("solar_total"), self.energy_solar_total
             )
-            self.peak_current = as_float(current.get("peak"))
-            self.peak_forecast = as_float(current.get("peak_forecast"))
-            self.peak_month = as_float(current.get("peak_month"))
+            self.peak_current = self._power_kw(current.get("peak"))
+            self.peak_forecast = self._power_kw(current.get("peak_forecast"))
+            self.peak_month = self._power_kw(current.get("peak_month"))
             peak_month_at = current.get("peak_month_datetime")
             self.peak_month_at = None if peak_month_at is None else str(peak_month_at)
             self.battery_power = as_float(current.get("battery_power"))
@@ -440,23 +526,25 @@ class EnergySnapshot:
             if isinstance(history, dict):
                 labels = history.get("labels") or []
                 values = (history.get("data") or {}).get("peak") or []
+                # A month that the server recorded while it was reading the
+                # wrong meter keeps its nonsense peak for good; leave it out.
                 self.peak_history = {
                     str(label): value
                     for label, raw in zip(labels, values, strict=False)
-                    if (value := as_float(raw)) is not None
+                    if (value := self._power_kw(raw)) is not None
                 }
 
         today = payload.get("1")
         if isinstance(today, dict):
-            self.today_usage = as_float(today.get("use"))
-            self.today_production = as_float(today.get("pro"))
-            self.today_solar = as_float(today.get("solar"))
+            self.today_usage = self._day_total(today.get("use"))
+            self.today_production = self._day_total(today.get("pro"))
+            self.today_solar = self._day_total(today.get("solar"))
 
         yesterday = payload.get("2")
         if isinstance(yesterday, dict):
-            self.yesterday_usage = as_float(yesterday.get("use"))
-            self.yesterday_production = as_float(yesterday.get("pro"))
-            self.yesterday_solar = as_float(yesterday.get("solar"))
+            self.yesterday_usage = self._day_total(yesterday.get("use"))
+            self.yesterday_production = self._day_total(yesterday.get("pro"))
+            self.yesterday_solar = self._day_total(yesterday.get("solar"))
 
         return before != self._fingerprint()
 
@@ -464,6 +552,7 @@ class EnergySnapshot:
         """Everything that decides whether listeners need to be told."""
         return (
             self.timestamp,
+            self.grid_meter_present,
             self.power_usage,
             self.power_production,
             self.power_solar,

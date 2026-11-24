@@ -108,16 +108,16 @@
         "name": "Solar power"
       },
       "energy_usage_high": {
-        "name": "Consumption, day tariff"
+        "name": "Consumption, tariff 2 (night)"
       },
       "energy_usage_low": {
-        "name": "Consumption, night tariff"
+        "name": "Consumption, tariff 1 (day)"
       },
       "energy_production_high": {
-        "name": "Injection, day tariff"
+        "name": "Injection, tariff 2 (night)"
       },
       "energy_production_low": {
-        "name": "Injection, night tariff"
+        "name": "Injection, tariff 1 (day)"
       },
       "energy_solar_total": {
         "name": "Solar production, total"

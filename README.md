@@ -39,6 +39,17 @@ listening. This integration exposes it:
 None of this costs an extra request: it rides along on the websocket the integration
 already keeps open.
 
+Tariff 1 is the day tariff on a Belgian meter (OBIS 1.8.1 and 2.8.1), tariff 2 the night
+and weekend tariff.
+
+**When the NXT loses its grid meter.** If its P1 source drops out, the NXT carries on
+with another meter it knows, such as a sub-meter on a heat pump, and reports that one as
+if it were the grid. You can tell from the frame: tariff 2 goes missing. The grid
+sensors then turn unavailable and a warning is logged, rather than feeding a heat pump's
+meter into your statistics. Check the energy configuration on the NXT when you see it.
+Readings no household connection could produce (a register that runs backwards or leaps
+thousands of kWh, a peak of 30 000 kW) are dropped as well.
+
 ### Covers
 
 A Dobiss cover is two relays. There is no position feedback and no end-stop signal, so

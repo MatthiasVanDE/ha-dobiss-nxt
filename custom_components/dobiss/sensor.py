@@ -43,12 +43,17 @@ class DobissEnergySensorDescription(SensorEntityDescription):
     value_fn: Callable[[EnergySnapshot], float | None]
     available_fn: Callable[[EnergySnapshot], bool] = lambda _: True
     attributes_fn: Callable[[EnergySnapshot], dict[str, Any]] | None = None
+    #: Whether the figure describes the grid connection. Those go unavailable
+    #: while the server has fallen back to another meter, because what it
+    #: reports then is that meter, not the grid.
+    grid: bool = False
 
 
 ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="power_usage",
         translation_key="power_usage",
+        grid=True,
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -57,6 +62,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="power_production",
         translation_key="power_production",
+        grid=True,
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -74,6 +80,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="energy_usage_high",
         translation_key="energy_usage_high",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -82,6 +89,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="energy_usage_low",
         translation_key="energy_usage_low",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -90,6 +98,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="energy_production_high",
         translation_key="energy_production_high",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -98,6 +107,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="energy_production_low",
         translation_key="energy_production_low",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -115,6 +125,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="peak_current",
         translation_key="peak_current",
+        grid=True,
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -123,6 +134,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="peak_forecast",
         translation_key="peak_forecast",
+        grid=True,
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -131,6 +143,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="peak_month",
         translation_key="peak_month",
+        grid=True,
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -143,6 +156,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="today_usage",
         translation_key="today_usage",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -151,6 +165,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="today_production",
         translation_key="today_production",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -159,6 +174,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="yesterday_usage",
         translation_key="yesterday_usage",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -167,6 +183,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="yesterday_production",
         translation_key="yesterday_production",
+        grid=True,
         device_class=SensorDeviceClass.ENERGY,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -175,6 +192,7 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="self_consumption",
         translation_key="self_consumption",
+        grid=True,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda e: e.own_percentage,
@@ -240,6 +258,16 @@ class DobissEnergySensor(DobissEntity, SensorEntity):
         self.entity_description = description
         self._attr_unique_id = f"{hub.host}_energy_{description.key}"
         self._attr_device_info = hub.energy_device_info()
+
+    @property
+    def available(self) -> bool:
+        """Unavailable while a grid figure would describe some other meter."""
+        if not super().available:
+            return False
+        return (
+            not self.entity_description.grid
+            or self._hub.client.energy.grid_meter_present
+        )
 
     @property
     def native_value(self) -> float | None:

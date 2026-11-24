@@ -186,3 +186,109 @@ def test_energy_snapshot_parses_the_live_payload() -> None:
             "2": {"use": "17.25", "pro": "6.17", "solar": "0.00"},
         }
     )
+
+
+def _grid_frame(**overrides):
+    """Build a healthy frame, as the NXT sent it on 2026-11-23 before 16:40."""
+    current = {
+        "datetime": "2026-11-23 16:39:00",
+        "use": "2380",
+        "pro": "0",
+        "use_low": 3348.256,
+        "use_high": 3798.57,
+        "pro_low": 1500.375,
+        "pro_high": 655.584,
+        "solar": None,
+        "solar_total": "16647.553",
+        "peak": 2.69,
+        "peak_forecast": 3.59,
+        "peak_month": 6.15,
+        "peak_month_datetime": "2026-11-04 07:15",
+    }
+    current.update(overrides)
+    return {"battery_available": False, "0": current}
+
+
+# What the NXT sent from 2026-11-23 16:40: its P1 source was gone and it read a
+# heat pump sub-meter instead, with the tariff-2 registers null.
+FALLBACK_FRAME = {
+    "battery_available": False,
+    "0": {
+        "datetime": "2026-11-24 06:43:00",
+        "use": "2601",
+        "pro": "0",
+        "use_low": 15394.376,
+        "use_high": None,
+        "pro_low": 0,
+        "pro_high": None,
+        "solar": None,
+        "solar_total": "16647.553",
+        "peak": 2.5,
+        "peak_forecast": 2.51,
+        "peak_month": 32879.06,
+        "peak_month_datetime": "2026-11-23 16:45",
+        "peak_history": {
+            "labels": ["2026-09", "2026-10", "2026-11"],
+            "data": {"peak": ["35847.29", "4.26", "32879.06"]},
+        },
+    },
+    "1": {"use": "14.31", "pro": "0.00", "solar": "0.00"},
+    "2": {"use": "8268.85", "pro": "-655.58", "solar": "0.00"},
+}
+
+
+def test_energy_fallback_meter_is_not_the_grid() -> None:
+    """A frame without tariff 2 describes another meter and must not count."""
+    energy = EnergySnapshot()
+    energy.apply(_grid_frame(), now=0.0)
+    assert energy.grid_meter_present
+    assert energy.energy_usage_low == 3348.256
+
+    energy.apply(FALLBACK_FRAME, now=60.0)
+    assert not energy.grid_meter_present
+    # The registers keep the last grid reading instead of the sub-meter's.
+    assert energy.energy_usage_low == 3348.256
+    assert energy.energy_usage_high == 3798.57
+    assert energy.energy_production_low == 1500.375
+    # Nonsense peaks and day totals are dropped, and so are old months that
+    # the server recorded while it was reading the wrong meter.
+    assert energy.peak_month is None
+    assert energy.peak_history == {"2026-10": 4.26}
+    assert energy.yesterday_usage is None
+    assert energy.yesterday_production is None
+    # Solar does not depend on the grid meter.
+    assert energy.energy_solar_total == 16647.553
+
+
+def test_energy_grid_meter_comes_back() -> None:
+    """Back on the grid meter, the registers carry on from where they were."""
+    energy = EnergySnapshot()
+    energy.apply(_grid_frame(), now=0.0)
+    energy.apply(FALLBACK_FRAME, now=60.0)
+    energy.apply(_grid_frame(use_low=3361.2), now=15 * 3600.0)
+    assert energy.grid_meter_present
+    assert energy.energy_usage_low == 3361.2
+
+
+def test_energy_register_rejects_glitches() -> None:
+    """A register that runs backwards or leaps is a glitch, not a reading."""
+    energy = EnergySnapshot()
+    energy.apply(_grid_frame(use_low=3348.096), now=0.0)
+    # Seen live at 16:38 on 2026-11-23: one frame 0.3 kWh lower.
+    energy.apply(_grid_frame(use_low=3347.783), now=60.0)
+    assert energy.energy_usage_low == 3348.096
+    # 12000 kWh in a minute is not a house.
+    energy.apply(_grid_frame(use_low=15365.955), now=120.0)
+    assert energy.energy_usage_low == 3348.096
+    assert energy.rejected_readings == 2
+    # The next genuine reading is accepted.
+    energy.apply(_grid_frame(use_low=3348.256), now=180.0)
+    assert energy.energy_usage_low == 3348.256
+
+
+def test_energy_register_accepts_a_long_gap() -> None:
+    """After a long outage the meter has legitimately moved on a lot."""
+    energy = EnergySnapshot()
+    energy.apply(_grid_frame(use_low=2619.643), now=0.0)
+    energy.apply(_grid_frame(use_low=3113.5), now=49 * 24 * 3600.0)
+    assert energy.energy_usage_low == 3113.5

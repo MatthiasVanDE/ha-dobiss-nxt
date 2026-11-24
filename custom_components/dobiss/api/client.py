@@ -384,8 +384,10 @@ class DobissClient:
                 continue
 
             if address == SubjectType.ENERGY:
+                had_grid = self.energy.grid_meter_present
                 if self.energy.apply(line):
                     changed.add(ENERGY_KEY)
+                self._log_grid_meter(had_grid)
                 continue
             if address == SubjectType.NOTIFICATION and isinstance(line, dict):
                 self.notifications = dict(line)
@@ -411,6 +413,19 @@ class DobissClient:
 
         for key in changed:
             self._notify(key)
+
+    def _log_grid_meter(self, had_grid: bool) -> None:
+        """Say so when the server stops or starts describing the grid."""
+        has_grid = self.energy.grid_meter_present
+        if had_grid and not has_grid:
+            _LOGGER.warning(
+                "The NXT at %s no longer reports a grid meter: tariff 2 is missing "
+                "and tariff 1 now comes from another meter. The grid sensors are "
+                "unavailable until it does. Check the energy source on the NXT",
+                self.host,
+            )
+        elif has_grid and not had_grid:
+            _LOGGER.info("The NXT at %s reports the grid meter again", self.host)
 
     def _apply_one(
         self, address: int, channel: int, value: Any
