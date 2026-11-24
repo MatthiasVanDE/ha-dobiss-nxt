@@ -3,6 +3,16 @@
 All notable changes are recorded here. This project follows
 [semantic versioning](https://semver.org/).
 
+## [2.1.1] - 2026-11-24
+
+### Fixed
+
+- 2.1.0 made the monthly peak unavailable while the NXT reads a fallback meter, which
+  also hid its `history` attribute: Home Assistant drops the attributes of an
+  unavailable entity. Templates that average the capacity tariff over twelve months
+  lost the months only Dobiss knew. The sensor now stays available with its history;
+  only the current month's value and time read unknown during a fallback.
+
 ## [2.1.0] - 2026-11-24
 
 ### Changed

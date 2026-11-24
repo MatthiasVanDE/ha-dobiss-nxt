@@ -143,13 +143,15 @@ ENERGY_SENSORS: tuple[DobissEnergySensorDescription, ...] = (
     DobissEnergySensorDescription(
         key="peak_month",
         translation_key="peak_month",
-        grid=True,
+        # Not a grid sensor on purpose: an unavailable entity loses its
+        # attributes, and the history of closed months stays valid while the
+        # server reads the wrong meter. Only this month's figure is withheld.
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda e: e.peak_month,
+        value_fn=lambda e: e.peak_month if e.grid_meter_present else None,
         attributes_fn=lambda e: {
-            "reached_at": e.peak_month_at,
+            "reached_at": e.peak_month_at if e.grid_meter_present else None,
             "history": dict(e.peak_history),
         },
     ),
